@@ -16,14 +16,14 @@ class Main {
     }
 
     static void mainMenu() throws IOException {
-        int result = menu("Personal Money Management Application", new String[]{"Exit", "Add income", "View Income", "Edit Income Entries", "Delete user data"});
+        int result = menu("Personal Money Management Application", new String[]{"Exit", "Set monthly income", "View monthly Income", "Edit Income Sources", "Delete user data"});
         switch (result) {
             case 0 -> {
                 System.out.println("Gracefully Shutting Down");
                 System.exit(0);
             }
             case 1 -> {
-                income.addIncome();
+                income.setIncome();
                 mainMenu();
             }
             case 2 -> {
@@ -36,9 +36,16 @@ class Main {
             }
             case 4 -> {
                 System.out.print("Deleting user data");
-                DataOutputStream dos = new DataOutputStream(new FileOutputStream(fl));
-                dos.close();
-                fl.delete();
+                File folder = new File("userinfo");
+                if (folder.listFiles() != null) {
+                    for (File toDelete : folder.listFiles()){
+                        DataOutputStream dos = new DataOutputStream(new FileOutputStream(toDelete));
+                        dos.close();
+                        toDelete.delete();
+                    }
+                }
+                folder.delete();
+                mainMenu();
             }
         }
     }
@@ -55,7 +62,8 @@ class Main {
             c++;
         } while (choice < 0 || choice >= options.length);
         String equals = "";
-        for (int i = 0; i < ("================ " + header + " ================").length(); i++) equals += "=";
+        for (int i = 0; i < ("================ " + header + " ================").length(); i++)
+            equals += "=";
         System.out.println(equals);
         return choice;
     }
@@ -85,10 +93,11 @@ class Income {
     void writeFile(boolean append) throws IOException {
         File fl = new File("userinfo/income.dat");
         DataOutputStream dos = new DataOutputStream(new FileOutputStream(fl, append));
-        System.out.print("How many income sources would you like to add\n Your answer:");
+        System.out.println("How many monthly income sources would you like to add?(for example, enter 1 if you want to add your business, 2 if you want to add your wage and stocks)");
+        System.out.print("Your answer:");
         sources = new String[sc.nextInt()];
         income = new double[sources.length];
-        System.out.println("Enter your sources of income:");
+        System.out.println("Enter your sources of monthly income:");
         for (int i = 0; i < sources.length; i++) sources[i] = new Scanner(System.in).nextLine();
         for (String source : sources) {
             dos.writeUTF(source);
@@ -135,7 +144,7 @@ class Income {
         }
     }
 
-    void addIncome() throws IOException {
+    void setIncome() throws IOException {
         createReadFile();
         File fl = Main.fl;
         File tmp = new File("userinfo/income.tmp");
@@ -144,7 +153,7 @@ class Income {
         int sel = Main.menu("Select income source:", sources);
         System.out.println("Enter amount of income to add:");
         double amt = sc.nextDouble();
-        income[sel] += amt;
+        income[sel] = amt;
         try {
             int record = 0;
             while (true) {
@@ -171,21 +180,21 @@ class Income {
         createReadFile();
         double sum = 0;
         for (double s : income) sum += s;
-        System.out.println("Total Income = " + sum);
-        System.out.print("Would you like to view income gained from a specific source? (Y/N)");
+        System.out.println("Total Monthly Income = " + sum);
+        System.out.print("Would you like to view monthly income gained from a specific source? (Y/N)");
         char ch;
         do {
             ch = sc.next().charAt(0);
         } while (ch != 'Y' && ch != 'z' && ch != 'Z' && ch != 'y');
-        if (ch == 'Y'||ch=='y') {
+        if (ch == 'Y' || ch == 'y') {
             int sel = Main.menu("Select income source to view", sources);
-            System.out.println("Income gained by " + sources[sel] + " = " + income[sel]);
+            System.out.println("Income gained per month by " + sources[sel] + " = " + income[sel]);
         }
     }
 
     void edit() throws IOException {
         createReadFile();
-        int option = Main.menu("Select action", new String[]{"Exit", "Add Income Entry", "List Income Entries", "Delete Income Entry"});
+        int option = Main.menu("Select action", new String[]{"Exit", "Add Income Source", "List Income Sources", "Delete Income Source"});
         switch (option) {
             case 0 -> Main.mainMenu();
             case 1 -> {
@@ -196,8 +205,27 @@ class Income {
                 list();
                 edit();
             }
-            case 4 -> {
-                System.out.println("Under Development");
+            case 3 -> {
+                int sel = Main.menu("Which entry do you want to delete?", sources);
+                File tmp = new File("userinfo/income.tmp");
+                File fl = new File("userinfo/income.dat");
+                Main.fileReplacer(fl, tmp);
+                DataOutputStream dos = new DataOutputStream(new FileOutputStream(fl));
+                DataInputStream dis = new DataInputStream(new FileInputStream(tmp));
+                try {
+                    for (int c = 0; true; c++) {
+                        if (c != sel) {
+                            dos.writeUTF(dis.readUTF());
+                            dos.writeDouble(dis.readDouble());
+                        } else {
+                            dis.readUTF();
+                            dis.readDouble();
+                        }
+                    }
+                } catch (EOFException ignored) {
+                }
+                tmp.delete();
+                readFile();
                 edit();
             }
         }
