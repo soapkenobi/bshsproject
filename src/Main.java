@@ -160,6 +160,7 @@ class Income {
         dos.close();
         dis.close();
         Main.fileReplacer(tmp, fl);
+        tmp.delete();
     }
 
     void addEntry() throws IOException {
