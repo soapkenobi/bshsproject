@@ -22,12 +22,6 @@ class Main {
                 System.out.println("Gracefully Shutting Down");
                 System.exit(0);
             }
-            case 4 -> {
-                System.out.print("Deleting user data");
-                DataOutputStream dos = new DataOutputStream(new FileOutputStream(fl));
-                dos.close();
-                fl.delete();
-            }
             case 1 -> {
                 income.addIncome();
                 mainMenu();
@@ -39,6 +33,12 @@ class Main {
             case 3 -> {
                 income.edit();
                 mainMenu();
+            }
+            case 4 -> {
+                System.out.print("Deleting user data");
+                DataOutputStream dos = new DataOutputStream(new FileOutputStream(fl));
+                dos.close();
+                fl.delete();
             }
         }
     }
