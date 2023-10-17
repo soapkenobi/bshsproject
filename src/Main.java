@@ -4,6 +4,11 @@
 import java.io.*;
 import java.util.Scanner;
 
+/**
+ * Contains the main class, which consists core backend functions and calls methods from other classes as
+ * required
+ * @author Ashutosh Mishra
+ */
 class Main {
     static Income income = new Income();
     static Scanner sc = new Scanner(System.in);
@@ -15,6 +20,12 @@ class Main {
         mainMenu();
     }
 
+    /**
+     * Displays the main menu of the application, and handles the user's choice by calling corresponding functions
+     * @throws IOException if the file could not be read
+     * @author Ashutosh Mishra
+     * @see Main#menu(String, String[])
+     */
     static void mainMenu() throws IOException {
         int result = menu("Personal Money Management Application", new String[]{"Exit", "Set monthly income", "View monthly Income", "Edit Income Sources", "Delete user data"});
         switch (result) {
@@ -38,7 +49,7 @@ class Main {
                 System.out.print("Deleting user data");
                 File folder = new File("userinfo");
                 if (folder.listFiles() != null) {
-                    for (File toDelete : folder.listFiles()){
+                    for (File toDelete : folder.listFiles()) {
                         DataOutputStream dos = new DataOutputStream(new FileOutputStream(toDelete));
                         dos.close();
                         toDelete.delete();
@@ -50,6 +61,14 @@ class Main {
         }
     }
 
+    /**
+     * Prints a menu using the given arguments, then takes input from user and checks if it is valid option and returns
+     * it
+     * @param header  the title of the menu
+     * @param options the options in the menu
+     * @return the choice input by the user
+     * @author Ashutosh Mishra
+     */
     static int menu(String header, String[] options) {
         int choice;
         int c = 0;
@@ -68,6 +87,11 @@ class Main {
         return choice;
     }
 
+    /**
+     * Replaces a given file with another
+     * @param org File to replace with
+     * @param dest File to be replaced
+     */
     static void fileReplacer(File org, File dest) throws IOException {
         dest.createNewFile();
         org.createNewFile();
@@ -85,6 +109,10 @@ class Main {
     }
 }
 
+/**
+ * Handles Income related calls, writes to file located at ./userinfo/income.dat
+ * @author Ashutosh Mishra
+ */
 class Income {
     String[] sources;
     Scanner sc = new Scanner(System.in);
