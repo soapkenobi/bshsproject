@@ -48,6 +48,7 @@ class Main {
             case 4 -> {
                 System.out.print("Deleting user data");
                 File folder = new File("userinfo");
+                income = new Income();
                 if (folder.listFiles() != null) {
                     for (File toDelete : folder.listFiles()) {
                         DataOutputStream dos = new DataOutputStream(new FileOutputStream(toDelete));
@@ -166,7 +167,7 @@ class Income {
         }
         boolean isEmpty = new BufferedReader(new FileReader(fl.getPath())).readLine() == null;
         if (isEmpty) {
-            System.out.println("WARNING: No data found in file, creating a new file, ignore if this is first run");
+            System.out.println("WARNING: No data found in file, creating a new file, ignore if this is first run\n");
             writeFile(false);
         } else {
             readFile();
