@@ -125,7 +125,7 @@ class Income {
         System.out.print("Your answer:");
         sources = new String[sc.nextInt()];
         income = new double[sources.length];
-        System.out.println("Enter your sources of monthly income:");
+        System.out.println("Enter the sources of monthly income you would like to add:");
         for (int i = 0; i < sources.length; i++) sources[i] = new Scanner(System.in).nextLine();
         for (String source : sources) {
             dos.writeUTF(source);
@@ -149,6 +149,7 @@ class Income {
         }
         sources = new String[l];
         income = new double[l];
+        dis.close();
         dis = new DataInputStream(new FileInputStream(fl));
         for (int i = 0; i < sources.length; i++) {
             sources[i] = dis.readUTF();
@@ -252,6 +253,8 @@ class Income {
                     }
                 } catch (EOFException ignored) {
                 }
+                dos.close();
+                dis.close();
                 tmp.delete();
                 readFile();
                 edit();
