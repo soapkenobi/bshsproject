@@ -1,264 +1,431 @@
-// Computer Project 2023-24; Personal Money Management Application
-// By Ashutosh Mishra, XB, Roll 3
-
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
+
+class Transaction {
+    private String description;
+    private boolean isImportant;
+    private double amount;
+    private LocalDateTime timeCreated;
+
+    public Transaction(String description, double amount) {
+        this.description = description;
+        this.amount = amount;
+        this.timeCreated = LocalDateTime.now();
+        isImportant = false;
+    }
+
+    public LocalDateTime getTime() {
+        return timeCreated;
+    }
+
+    public boolean isImportant() {
+        return isImportant;
+    }
+
+    public void setImportant(boolean isImportant) {
+        this.isImportant = isImportant;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setTime(LocalDateTime timeCreated) {
+        this.timeCreated = timeCreated;
+    }
+}
+
+class PersonalFinanceManager {
+    public DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    private double balance;
+    private ArrayList<Transaction> transactions;
+
+    public PersonalFinanceManager() {
+        balance = 0.0;
+        transactions = new ArrayList<>();
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void addTransaction(String description, double amount) {
+        Transaction transaction = new Transaction(description, amount);
+        transactions.add(transaction);
+        balance += amount;
+    }
+
+    public void displayTransactions() {
+        System.out.println("---------------------------- Transaction History ----------------------------");
+        List<List<String>> rows = new ArrayList<>();
+        List<String> headers = Arrays.asList("ID", "Date", "Time", "Description", "Amount");
+        rows.add(headers);
+        for (int i = 0; i < transactions.size(); i++) {
+            displayTransaction(rows, i);
+        }
+        System.out.println(Main.formatAsTable(rows));
+        System.out.println("-".repeat("---------------------------- Transaction History ----------------------------".length()));
+    }
+
+    public void displayImportant() {
+        System.out.println("---------------------------- Important Transaction History ----------------------------");
+        List<List<String>> rows = new ArrayList<>();
+        List<String> headers = Arrays.asList("ID", "Date", "Time", "Description", "Amount");
+        rows.add(headers);
+        for (int i = 0; i < transactions.size(); i++) {
+            if (transactions.get(i).isImportant()) {
+                displayTransaction(rows, i);
+            }
+        }
+        System.out.println(Main.formatAsTable(rows));
+        System.out.println("-".repeat("---------------------------- Important Transaction History ----------------------------".length()));
+    }
+
+    public void displayOptional() {
+        System.out.println("---------------------------- Optional Transaction History ----------------------------");
+        List<List<String>> rows = new ArrayList<>();
+        List<String> headers = Arrays.asList("ID", "Date", "Time", "Description", "Amount");
+        rows.add(headers);
+        for (int i = 0; i < transactions.size(); i++) {
+            if (!(transactions.get(i).isImportant())) {
+                displayTransaction(rows, i);
+            }
+        }
+        System.out.println(Main.formatAsTable(rows));
+        System.out.println("-".repeat("---------------------------- Optional Transaction History ----------------------------".length()));
+    }
+
+    private void displayTransaction(List<List<String>> rows, int i) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        DateTimeFormatter tf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        Transaction transaction = transactions.get(i);
+        String id = i + "";
+        String dateCreated = df.format(transaction.getTime());
+        String timeCreated = tf.format(transaction.getTime());
+        String description = transaction.getDescription();
+        String amount = transaction.getAmount() + "";
+        rows.add(Arrays.asList(id, dateCreated, timeCreated, description, amount));
+    }
+
+    public void displayByDate(String date) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        DateTimeFormatter tf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        System.out.println("---------------------------- Transactions on " + date + " ----------------------------");
+        List<List<String>> rows = new ArrayList<>();
+        List<String> headers = Arrays.asList("ID", "Time", "Description", "Amount");
+        rows.add(headers);
+        for (int i = 0; i < transactions.size(); i++) {
+            if (df.format(transactions.get(i).getTime()).equalsIgnoreCase(date)) {
+                Transaction transaction = transactions.get(i);
+                String id = i + "";
+                String timeCreated = tf.format(transaction.getTime());
+                String description = transaction.getDescription();
+                String amount = transaction.getAmount() + "";
+                rows.add(Arrays.asList(id, timeCreated, description, amount));
+            }
+        }
+        System.out.println(Main.formatAsTable(rows));
+        System.out.println("-".repeat(("---------------------------- Transactions on " + date + " ----------------------------").length()));
+    }
+
+
+    public Transaction deleteTransaction(String description) {
+        Transaction deleted = new Transaction("null_trans", 0);
+        for (Transaction transaction : transactions) {
+            if (transaction.getDescription().equalsIgnoreCase(description)) {
+                deleted = transaction;
+                transactions.remove(transaction);
+            }
+        }
+        return deleted;
+    }
+
+    public double totalIncome() {
+        double income = 0;
+        for (Transaction transaction : transactions) {
+            if (transaction.getAmount() >= 0) income += transaction.getAmount();
+        }
+        return income;
+    }
+
+    public double totalExpenses() {
+        double expense = 0;
+        for (Transaction transaction : transactions) {
+            if (transaction.getAmount() <= 0) expense += Math.abs(transaction.getAmount());
+        }
+        return expense;
+    }
+
+    public ArrayList<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void write(File fl) throws IOException {
+        DataOutputStream dos = new DataOutputStream(new FileOutputStream(fl));
+        for (Transaction transaction : transactions) {
+            dos.writeUTF("Transaction:");
+            dos.writeUTF(dtf.format(transaction.getTime()));
+            dos.writeUTF(transaction.getDescription());
+            dos.writeDouble(transaction.getAmount());
+            dos.writeBoolean(transaction.isImportant());
+        }
+        dos.close();
+    }
+
+    public void read(File fl) throws IOException {
+        fl.createNewFile();
+        DataInputStream dis = new DataInputStream(new FileInputStream(fl));
+        transactions = new ArrayList<>();
+        try {
+            while (true) {
+                if (dis.readUTF().equals("Transaction:")) {
+                    String time = dis.readUTF();
+                    LocalDateTime parser = LocalDateTime.parse(time, dtf);
+                    String description = dis.readUTF();
+                    double amount = dis.readDouble();
+                    boolean important = dis.readBoolean();
+                    Transaction transaction = new Transaction(description, amount);
+                    transaction.setTime(parser);
+                    transaction.setImportant(important);
+                    transactions.add(transaction);
+                }
+            }
+        } catch (EOFException ignored) {
+        }
+        dis.close();
+    }
+}
 
 class Main {
-    static Income income = new Income();
+    static File fl = new File("transactionHistory.log");
     static Scanner sc = new Scanner(System.in);
-    static File fl = new File("userinfo");
+    static PersonalFinanceManager manager;
 
-    public static void main(String[] args) throws IOException {
-        fl.mkdir();
-        fl = new File(fl.getPath() + "/income.dat");
+    public static void main(String[] args) {
+        manager = new PersonalFinanceManager();
         mainMenu();
     }
 
-    static void mainMenu() throws IOException {
-        int result = menu("Personal Money Management Application", new String[]{"Exit", "Set monthly income", "View monthly Income", "Edit Income Sources", "Delete user data"});
-        switch (result) {
-            case 0 -> {
-                System.out.println("Gracefully Shutting Down");
+    static void mainMenu() {
+        while (true) {
+            try {
+                manager.read(fl);
+            } catch (IOException e) {
+                System.out.println("ERROR: Couldn't read file");
                 System.exit(0);
             }
-            case 1 -> {
-                income.setIncome();
-                mainMenu();
-            }
-            case 2 -> {
-                income.viewEntry();
-                mainMenu();
-            }
-            case 3 -> {
-                income.edit();
-                mainMenu();
-            }
-            case 4 -> {
-                System.out.print("Deleting user data");
-                File folder = new File("userinfo");
-                income = new Income();
-                if (folder.listFiles() != null) {
-                    for (File toDelete : folder.listFiles()) {
-                        DataOutputStream dos = new DataOutputStream(new FileOutputStream(toDelete));
-                        dos.close();
-                        toDelete.delete();
+            int choice = menu("Personal Money Management Application", getMainMenuOptions());
+            switch (choice) {
+                case 1 -> {
+                    System.out.print("Enter income description: ");
+                    String incomeDescription = sc.nextLine();
+                    System.out.print("Enter income amount: ₹");
+                    double incomeAmount = sc.nextDouble();
+                    manager.addTransaction(incomeDescription, incomeAmount);
+                    try {
+                        manager.write(fl);
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save changes to file, try again later");
                     }
                 }
-                folder.delete();
-                mainMenu();
+                case 2 -> {
+                    System.out.print("Enter expense description: ");
+                    String expenseDescription = sc.nextLine();
+                    System.out.print("Enter expense amount: ₹");
+                    double expenseAmount = sc.nextDouble();
+                    manager.addTransaction(expenseDescription, -expenseAmount);
+                    try {
+                        manager.write(fl);
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save changes to file, try again later");
+                    }
+                }
+                case 3 -> {
+                    System.out.println("Enter expense ID to mark important: ");
+                    int id = sc.nextInt();
+                    try {
+                        manager.getTransactions().get(id).setImportant(true);
+                    } catch (IndexOutOfBoundsException e) {
+                        System.out.println("Element with id " + id + " not present in transaction history");
+                    }
+                }
+                case 4 -> {
+                    System.out.println("Enter expense ID to unmark important: ");
+                    int id = sc.nextInt();
+                    try {
+                        manager.getTransactions().get(id).setImportant(false);
+                    } catch (IndexOutOfBoundsException e) {
+                        System.out.println("Element with id " + id + " not present in transaction history");
+                    }
+                }
+                case 5 -> {
+                    System.out.print("Enter transaction ID to delete: ");
+                    int toDelete = sc.nextInt();
+                    if (toDelete < manager.getTransactions().size()) {
+                        manager.getTransactions().remove(toDelete);
+                        System.out.println("Transaction deleted successfully");
+                    } else System.out.println("Transaction with ID " + toDelete + " not found");
+                    try {
+                        manager.write(fl);
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save changes to file, try again later");
+                    }
+                }
+                case 6 -> {
+                    System.out.print("Enter transaction description to delete: ");
+                    String toDelete = sc.nextLine();
+                    if(manager.deleteTransaction(toDelete).getDescription().equals("null_trans")) System.out.println("No such transaction found");
+                    else System.out.println("Transaction deleted successfully");
+                    try {
+                        manager.write(fl);
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save changes to file, try again later");
+                    }
+                }
+                case 7 -> {
+                    System.out.print("Enter transaction ID to edit: ");
+                    int toEdit = sc.nextInt();
+                    boolean exists = manager.getTransactions().size() > toEdit;
+                    ArrayList<String> menuOptions = new ArrayList<>();
+                    if (exists) {
+                        menuOptions.add("Go Back");
+                        menuOptions.add("Description");
+                        menuOptions.add("Amount");
+                        menuOptions.add("Time of creation");
+                        switch (menu("What would you like to edit?", menuOptions)) {
+                            case 1 -> {
+                                System.out.print("Enter new description for transaction: ");
+                                String str = sc.nextLine();
+                                manager.getTransactions().get(toEdit).setDescription(str);
+                            }
+                            case 2 -> {
+                                System.out.print("Enter updated amount for transaction: ");
+                                double newAmount = sc.nextDouble();
+                                manager.getTransactions().get(toEdit).setAmount(newAmount);
+                            }
+                            case 3 -> {
+                                System.out.print("Enter new date and time(format yyyy/MM/dd HH:mm:ss):");
+                                LocalDateTime localDateTime = LocalDateTime.parse(sc.nextLine(), manager.dtf);
+                                manager.getTransactions().get(toEdit).setTime(localDateTime);
+                            }
+                        }
+                    }
+                    try {
+                        manager.write(fl);
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save changes to file, try again later");
+                    }
+                }
+                case 8 -> System.out.println("Total income recorded: " + manager.totalIncome());
+                case 9 -> System.out.println("Total expenditure recorded: " + manager.totalExpenses());
+                case 10 -> System.out.println("Current Balance: $" + manager.getBalance());
+                case 11 -> manager.displayImportant();
+                case 12 -> manager.displayOptional();
+                case 13 -> manager.displayTransactions();
+                case 14 -> {
+                    System.out.println("Enter date to filter(yyyy/MM/dd): ");
+                    String date = sc.nextLine();
+                    manager.displayByDate(date);
+                }
+                case 15 -> {
+                    System.out.print("Deleting all user data: ");
+                    System.out.println(fl.delete()?"Successful" : "Unsuccessful");
+                    main(new String[0]);
+                }
+                default -> {
+                    System.out.println("Exiting...");
+                    System.exit(0);
+                    try {
+                        manager.write(fl);
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save changes to file, try again later");
+                    }
+                }
             }
         }
+    }
+
+    static int menu(String header, ArrayList<String> options) {
+        int choice;
+        int c = 0;
+        System.out.println("\n|=============== * " + header + " * ===============|");
+        do {
+            if (c > 0) System.out.println("\nInvalid choice, try again or press Ctrl+D to exit");
+            boolean hasExitFirst = options.get(0).equalsIgnoreCase("Exit") || options.get(0).equalsIgnoreCase("Go Back");
+            for (int i = 0; i < options.size(); i++) {
+                if (hasExitFirst && i == 0)
+                    continue;
+                printOption(i, options.get(i));
+            }
+            if (hasExitFirst)
+                printOption(0, options.get(0));
+            System.out.print("Select an option to proceed:");
+            choice = sc.nextInt();
+            c++;
+        } while (choice < 0 || choice >= options.size());
+        System.out.println("=".repeat(("|==============- * " + header + " * -==============|").length()));
+        sc.nextLine();
+        return choice;
+    }
+
+    public static String formatAsTable(List<List<String>> rows) {
+        int[] maxLengths = new int[rows.get(0).size()];
+        for (List<String> row : rows) {
+            for (int i = 0; i < row.size(); i++) {
+                maxLengths[i] = Math.max(maxLengths[i], row.get(i).length());
+            }
+        }
+        StringBuilder formatBuilder = new StringBuilder();
+        for (int maxLength : maxLengths) {
+            formatBuilder.append("%-").append(maxLength + 2).append("s");
+        }
+        String format = formatBuilder.toString();
+        StringBuilder result = new StringBuilder();
+        for (List<String> row : rows) {
+            result.append(String.format(format, (Object[]) row.toArray(new String[0]))).append("\n");
+        }
+        return result.toString();
     }
 
     static void printOption(int selNumber, String option) {
         System.out.println("[" + selNumber + "] " + option);
     }
 
-    static int menu(String header, String[] options) {
-        int choice;
-        int c = 0;
-        System.out.println("\n================ " + header + " ================");
-        do {
-            if (c > 0) System.out.println("\nInvalid choice, try again or press Ctrl+D to exit");
-            boolean hasExitFirst = options[0].equalsIgnoreCase("Exit");
-            for (int i = 0; i < options.length; i++) {
-                if (hasExitFirst && i == 0)
-                    continue;
-                printOption(i, options[i]);
-            }
-            if (hasExitFirst)
-                printOption(0, options[0]);
-            System.out.print("Select an option to proceed:");
-            choice = sc.nextInt();
-            c++;
-        } while (choice < 0 || choice >= options.length);
-        System.out.println("=".repeat(("================ " + header + " ================").length()));
-        return choice;
-    }
-
-    static void fileReplacer(File org, File dest) throws IOException {
-        dest.createNewFile();
-        org.createNewFile();
-        DataOutputStream dos = new DataOutputStream(new FileOutputStream(dest));
-        DataInputStream dis = new DataInputStream(new FileInputStream(org));
-        try {
-            while (true) {
-                dos.writeUTF(dis.readUTF());
-                dos.writeDouble(dis.readDouble());
-            }
-        } catch (EOFException ignored) {
-        }
-        dos.close();
-        dis.close();
-    }
-}
-
-class Income {
-    String[] sources;
-    Scanner sc = new Scanner(System.in);
-    double[] income;
-
-    void writeFile(boolean append) throws IOException {
-        File fl = new File("userinfo/income.dat");
-        DataOutputStream dos = new DataOutputStream(new FileOutputStream(fl, append));
-        sources = new String[1];
-        char ch;
-        do {
-            System.out.println("Enter your source of income:");
-            sources[sources.length - 1] = new Scanner(System.in).nextLine();
-            System.out.println("Would you like to add another one?(Y/N)");
-            ch = new Scanner(System.in).next().charAt(0);
-            if (ch == 'y' || ch == 'Y') sources = arrayExpander(sources);
-        } while (ch == 'Y' || ch == 'y');
-        income = new double[sources.length];
-        for (String source : sources) {
-            dos.writeUTF(source);
-            dos.writeDouble(0.0);
-        }
-        dos.close();
-        readFile();
-    }
-
-    String[] arrayExpander(String[] array) {
-        String[] temparray = array;
-        array = new String[temparray.length + 1];
-        System.arraycopy(temparray, 0, array, 0, temparray.length);
-        return array;
-    }
-
-    void readFile() throws IOException {
-        File fl = new File("userinfo/income.dat");
-        DataInputStream dis = new DataInputStream(new FileInputStream(fl));
-        int l = 0;
-        try {
-            while (true) {
-                dis.readUTF();
-                dis.readDouble();
-                l++;
-            }
-        } catch (EOFException ignored) {
-        }
-        sources = new String[l];
-        income = new double[l];
-        dis.close();
-        dis = new DataInputStream(new FileInputStream(fl));
-        for (int i = 0; i < sources.length; i++) {
-            sources[i] = dis.readUTF();
-            income[i] = dis.readDouble();
-        }
-        dis.close();
-    }
-
-    void createReadFile() throws IOException {
-        File fl = new File("userinfo/income.dat");
-        try {
-            fl.createNewFile();
-        } catch (IOException ignored) {
-        }
-        boolean isEmpty = new BufferedReader(new FileReader(fl.getPath())).readLine() == null;
-        if (isEmpty) {
-            System.out.println("WARNING: No data found in file, creating a new file, ignore if this is first run\n");
-            writeFile(false);
-        } else {
-            readFile();
-        }
-    }
-
-    void setIncome() throws IOException {
-        createReadFile();
-        File fl = Main.fl;
-        File tmp = new File("userinfo/income.tmp");
-        DataOutputStream dos = new DataOutputStream(new FileOutputStream(tmp));
-        DataInputStream dis = new DataInputStream(new FileInputStream(fl));
-        int sel = Main.menu("Select income source:", sources);
-        System.out.println("Enter amount of income to add:");
-        double amt = sc.nextDouble();
-        income[sel] = amt;
-        try {
-            int record = 0;
-            while (true) {
-                dos.writeUTF(dis.readUTF());
-                if (record == sel) {
-                    dos.writeDouble(income[sel]);
-                    dis.readDouble();
-                } else dos.writeDouble(dis.readDouble());
-                record++;
-            }
-        } catch (EOFException ignored) {
-        }
-        dos.close();
-        dis.close();
-        Main.fileReplacer(tmp, fl);
-        tmp.delete();
-    }
-
-    void addEntry() throws IOException {
-        writeFile(true);
-    }
-
-    void viewEntry() throws IOException {
-        createReadFile();
-        double sum = 0;
-        for (double s : income) sum += s;
-        System.out.println("Total Monthly Income = " + sum);
-        System.out.print("Would you like to view monthly income gained from a specific source? (Y/N)");
-        char ch;
-        do {
-            ch = sc.next().charAt(0);
-        } while (ch != 'Y' && ch != 'z' && ch != 'Z' && ch != 'y');
-        if (ch == 'Y' || ch == 'y') {
-            int sel = Main.menu("Select income source to view", sources);
-            System.out.println("Income gained per month by " + sources[sel] + " = " + income[sel]);
-        }
-    }
-
-    void edit() throws IOException {
-        createReadFile();
-        int option = Main.menu("Select action", new String[]{"Exit", "Add Income Source", "List Income Sources", "Delete Income Source"});
-        switch (option) {
-            case 0 -> Main.mainMenu();
-            case 1 -> {
-                addEntry();
-                edit();
-            }
-            case 2 -> {
-                list();
-                edit();
-            }
-            case 3 -> {
-                int sel = Main.menu("Which entry do you want to delete?", sources);
-                File tmp = new File("userinfo/income.tmp");
-                File fl = new File("userinfo/income.dat");
-                Main.fileReplacer(fl, tmp);
-                DataOutputStream dos = new DataOutputStream(new FileOutputStream(fl));
-                DataInputStream dis = new DataInputStream(new FileInputStream(tmp));
-                try {
-                    for (int c = 0; true; c++) {
-                        if (c != sel) {
-                            dos.writeUTF(dis.readUTF());
-                            dos.writeDouble(dis.readDouble());
-                        } else {
-                            dis.readUTF();
-                            dis.readDouble();
-                        }
-                    }
-                } catch (EOFException ignored) {
-                }
-                dos.close();
-                dis.close();
-                tmp.delete();
-                readFile();
-                edit();
-            }
-        }
-    }
-
-    void list() throws IOException {
-        createReadFile();
-        for (int i = 0; i < sources.length; i++) {
-            System.out.println("[" + i + "]" + sources[i]);
-        }
+    private static ArrayList<String> getMainMenuOptions() {
+        ArrayList<String> options = new ArrayList<>();
+        options.add("Exit");
+        options.add("Add Income");
+        options.add("Add Expense");
+        options.add("Mark Transaction Important");
+        options.add("Unmark Transaction Important");
+        options.add("Delete Transaction by ID");
+        options.add("Delete Transactions by description");
+        options.add("Edit Transaction");
+        options.add("View Total Income");
+        options.add("View Total Expenditure");
+        options.add("View Balance");
+        options.add("View Important Transactions");
+        options.add("View Optional Transactions");
+        options.add("View Transaction History");
+        options.add("View Transactions By Date");
+        options.add("Delete All Transaction Records");
+        return options;
     }
 }
