@@ -73,8 +73,14 @@ class PersonalFinanceManager {
         balance += amount;
     }
 
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
+        System.out.println("Added transaction with ID: " + (transactions.size() - 1));
+        balance += transaction.getAmount();
+    }
+
     public void displayTransactions() {
-        System.out.println("---------------------------- Transaction History ----------------------------");
+        System.out.println("-".repeat(28) + " Transaction History " + "-".repeat(28));
         List<List<String>> rows = new ArrayList<>();
         List<String> headers = Arrays.asList("ID", "Date", "Time", "Description", "Amount", "Important");
         rows.add(headers);
@@ -82,11 +88,11 @@ class PersonalFinanceManager {
             displayTransaction(rows, i, true);
         }
         System.out.println(Main.formatAsTable(rows));
-        System.out.println("-".repeat("---------------------------- Transaction History ----------------------------".length()));
+        System.out.println("-".repeat(("-".repeat(28) + " Transaction History " + "-".repeat(28)).length()));
     }
 
     public void displayImportant() {
-        System.out.println("---------------------------- Important Transaction History ----------------------------");
+        System.out.println("-".repeat(28) + " Important Transaction History " + "-".repeat(28));
         List<List<String>> rows = new ArrayList<>();
         List<String> headers = Arrays.asList("ID", "Date", "Time", "Description", "Amount");
         rows.add(headers);
@@ -96,11 +102,11 @@ class PersonalFinanceManager {
             }
         }
         System.out.println(Main.formatAsTable(rows));
-        System.out.println("-".repeat("---------------------------- Important Transaction History ----------------------------".length()));
+        System.out.println("-".repeat(("-".repeat(28) + " Important Transaction History " + "-".repeat(28)).length()));
     }
 
     public void displayOptional() {
-        System.out.println("---------------------------- Optional Transaction History ----------------------------");
+        System.out.println("-".repeat(28) + " Optional Transaction History " + "-".repeat(28));
         List<List<String>> rows = new ArrayList<>();
         List<String> headers = Arrays.asList("ID", "Date", "Time", "Description", "Amount");
         rows.add(headers);
@@ -110,7 +116,7 @@ class PersonalFinanceManager {
             }
         }
         System.out.println(Main.formatAsTable(rows));
-        System.out.println("-".repeat("---------------------------- Optional Transaction History ----------------------------".length()));
+        System.out.println("-".repeat(("-".repeat(28) + " Optional Transaction History " + "-".repeat(28)).length()));
     }
 
     private void displayTransaction(List<List<String>> rows, int i, boolean showImportant) {
@@ -131,7 +137,7 @@ class PersonalFinanceManager {
     public void displayByDate(String date) {
         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         DateTimeFormatter tf = DateTimeFormatter.ofPattern("HH:mm:ss");
-        System.out.println("---------------------------- Transactions on " + date + " ----------------------------");
+        System.out.println("-".repeat(28) + " Transactions on " + date + "-".repeat(28));
         List<List<String>> rows = new ArrayList<>();
         List<String> headers = Arrays.asList("ID", "Time", "Description", "Amount", "Important");
         rows.add(headers);
@@ -147,7 +153,7 @@ class PersonalFinanceManager {
             }
         }
         System.out.println(Main.formatAsTable(rows));
-        System.out.println("-".repeat(("---------------------------- Transactions on " + date + " ----------------------------").length()));
+        System.out.println("-".repeat(("-".repeat(28) + " Transactions on " + date + "-".repeat(28)).length()));
     }
 
 
@@ -218,12 +224,53 @@ class PersonalFinanceManager {
     }
 }
 
+class FinancialCalculators {
+    private final Scanner input;
+
+    public FinancialCalculators(Scanner input) {
+        this.input = input;
+    }
+
+    public Transaction recurringDeposit() {
+        System.out.print("Enter amount paid per deposit: ");
+        double ed = input.nextDouble();
+        System.out.print("Enter rate of interest: ");
+        double r = input.nextDouble();
+        System.out.println("How many months would this recurring deposit last?");
+        int n = input.nextInt();
+        double simpleInterest = (ed * n * (n + 1) * r) / (2d * 12 * 100);
+        double maturityValue = ed * n + simpleInterest;
+        System.out.println("Maturity value of recurring deposit: " + maturityValue);
+        Transaction transaction = new Transaction("Recurring Deposit", maturityValue);
+        transaction.setTime(transaction.getTime().plusMonths(n));
+        return transaction;
+    }
+
+    public Transaction simpleInterest() {
+        System.out.print("Enter amount paid: ");
+        double ed = input.nextDouble();
+        System.out.print("Enter rate of interest: ");
+        double r = input.nextDouble();
+        System.out.println("How many months would this account last?");
+        int n = input.nextInt();
+        double simpleInterest = (ed * n * (n + 1) * r) / (2d * 12 * 100);
+        System.out.println("Interest earned on account: " + simpleInterest);
+        Transaction transaction = new Transaction("Simple Interest", simpleInterest);
+        transaction.setTime(transaction.getTime().plusMonths(n));
+        return transaction;
+    }
+}
+
 class Main {
-    static File fl = new File("transactionHistory.log");
-    static Scanner sc = new Scanner(System.in);
+    static File fl;
+    static Scanner sc;
+    static FinancialCalculators fc;
     static PersonalFinanceManager manager;
 
     public static void main(String[] args) {
+        fl = new File("transactionHistory.log");
+        sc = new Scanner(System.in);
+        fc = new FinancialCalculators(sc);
         manager = new PersonalFinanceManager();
         mainMenu();
     }
@@ -263,7 +310,7 @@ class Main {
                     }
                 }
                 case 3 -> {
-                    System.out.println("Enter expense ID to mark important: ");
+                    System.out.println("Enter transaction ID to mark important: ");
                     int id = sc.nextInt();
                     try {
                         manager.getTransactions().get(id).setImportant(true);
@@ -277,7 +324,7 @@ class Main {
                     }
                 }
                 case 4 -> {
-                    System.out.println("Enter expense ID to unmark important: ");
+                    System.out.println("Enter transaction ID to unmark important: ");
                     int id = sc.nextInt();
                     try {
                         manager.getTransactions().get(id).setImportant(false);
@@ -351,7 +398,7 @@ class Main {
                 }
                 case 8 -> System.out.println("Total income recorded: " + manager.totalIncome());
                 case 9 -> System.out.println("Total expenditure recorded: " + manager.totalExpenses());
-                case 10 -> System.out.println("Current Balance: $" + manager.getBalance());
+                case 10 -> System.out.println("Current Balance: ₹" + manager.getBalance());
                 case 11 -> manager.displayImportant();
                 case 12 -> manager.displayOptional();
                 case 13 -> manager.displayTransactions();
@@ -364,6 +411,22 @@ class Main {
                     System.out.print("Deleting all user data: ");
                     System.out.println(fl.delete() ? "Successful" : "Unsuccessful");
                     main(new String[0]);
+                }
+                case 16 -> {
+                    Transaction tr = fc.recurringDeposit();
+                    char ch;
+                    System.out.println("Would you like to add the maturity value as an income transaction?(Y/N)");
+                    ch = sc.next().charAt(0);
+                    if (ch == 'Y' || ch == 'y')
+                        manager.addTransaction(tr);
+                }
+                case 17 -> {
+                    Transaction tr = fc.simpleInterest();
+                    char ch;
+                    System.out.println("Would you like to add the interest as an income transaction?(Y/N)");
+                    ch = sc.next().charAt(0);
+                    if (ch == 'Y' || ch == 'y')
+                        manager.addTransaction(tr);
                 }
                 default -> {
                     System.out.println("Exiting...");
@@ -381,7 +444,7 @@ class Main {
     static int menu(String header, ArrayList<String> options) {
         int choice;
         int c = 0;
-        System.out.println("\n|=============== * " + header + " * ===============|");
+        System.out.println("\n|<=============== * " + header + " * ===============>|");
         do {
             if (c > 0) System.out.println("\nInvalid choice, try again or press Ctrl+D to exit");
             boolean hasExitFirst = options.get(0).equalsIgnoreCase("Exit") || options.get(0).equalsIgnoreCase("Go Back");
@@ -396,7 +459,7 @@ class Main {
             choice = sc.nextInt();
             c++;
         } while (choice < 0 || choice >= options.size());
-        System.out.println("=".repeat(("|==============- * " + header + " * -==============|").length()));
+        System.out.println("=".repeat(("|<=============== * " + header + " * ===============>|").length()));
         sc.nextLine();
         return choice;
     }
@@ -432,7 +495,7 @@ class Main {
         options.add("Mark Transaction Important");
         options.add("Unmark Transaction Important");
         options.add("Delete Transaction by ID");
-        options.add("Delete Transactions by description");
+        options.add("Delete Transactions by Description");
         options.add("Edit Transaction");
         options.add("View Total Income");
         options.add("View Total Expenditure");
@@ -442,6 +505,8 @@ class Main {
         options.add("View Transaction History");
         options.add("View Transactions By Date");
         options.add("Delete All Transaction Records");
+        options.add("Calculate Maturity Value Of Recurring Deposit");
+        options.add("Calculate Simple Interest");
         return options;
     }
 }
