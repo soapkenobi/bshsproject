@@ -69,16 +69,17 @@ class PersonalFinanceManager {
     public void addTransaction(String description, double amount) {
         Transaction transaction = new Transaction(description, amount);
         transactions.add(transaction);
+        System.out.println("Added transaction with ID: " + (transactions.size() - 1));
         balance += amount;
     }
 
     public void displayTransactions() {
         System.out.println("---------------------------- Transaction History ----------------------------");
         List<List<String>> rows = new ArrayList<>();
-        List<String> headers = Arrays.asList("ID", "Date", "Time", "Description", "Amount");
+        List<String> headers = Arrays.asList("ID", "Date", "Time", "Description", "Amount", "Important");
         rows.add(headers);
         for (int i = 0; i < transactions.size(); i++) {
-            displayTransaction(rows, i);
+            displayTransaction(rows, i, true);
         }
         System.out.println(Main.formatAsTable(rows));
         System.out.println("-".repeat("---------------------------- Transaction History ----------------------------".length()));
@@ -91,7 +92,7 @@ class PersonalFinanceManager {
         rows.add(headers);
         for (int i = 0; i < transactions.size(); i++) {
             if (transactions.get(i).isImportant()) {
-                displayTransaction(rows, i);
+                displayTransaction(rows, i, false);
             }
         }
         System.out.println(Main.formatAsTable(rows));
@@ -105,14 +106,14 @@ class PersonalFinanceManager {
         rows.add(headers);
         for (int i = 0; i < transactions.size(); i++) {
             if (!(transactions.get(i).isImportant())) {
-                displayTransaction(rows, i);
+                displayTransaction(rows, i, false);
             }
         }
         System.out.println(Main.formatAsTable(rows));
         System.out.println("-".repeat("---------------------------- Optional Transaction History ----------------------------".length()));
     }
 
-    private void displayTransaction(List<List<String>> rows, int i) {
+    private void displayTransaction(List<List<String>> rows, int i, boolean showImportant) {
         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         DateTimeFormatter tf = DateTimeFormatter.ofPattern("HH:mm:ss");
         Transaction transaction = transactions.get(i);
@@ -121,7 +122,10 @@ class PersonalFinanceManager {
         String timeCreated = tf.format(transaction.getTime());
         String description = transaction.getDescription();
         String amount = transaction.getAmount() + "";
-        rows.add(Arrays.asList(id, dateCreated, timeCreated, description, amount));
+        if (showImportant) {
+            boolean important = transaction.isImportant();
+            rows.add(Arrays.asList(id, dateCreated, timeCreated, description, amount, important ? "*" : " "));
+        } else rows.add(Arrays.asList(id, dateCreated, timeCreated, description, amount));
     }
 
     public void displayByDate(String date) {
@@ -129,7 +133,7 @@ class PersonalFinanceManager {
         DateTimeFormatter tf = DateTimeFormatter.ofPattern("HH:mm:ss");
         System.out.println("---------------------------- Transactions on " + date + " ----------------------------");
         List<List<String>> rows = new ArrayList<>();
-        List<String> headers = Arrays.asList("ID", "Time", "Description", "Amount");
+        List<String> headers = Arrays.asList("ID", "Time", "Description", "Amount", "Important");
         rows.add(headers);
         for (int i = 0; i < transactions.size(); i++) {
             if (df.format(transactions.get(i).getTime()).equalsIgnoreCase(date)) {
@@ -138,7 +142,8 @@ class PersonalFinanceManager {
                 String timeCreated = tf.format(transaction.getTime());
                 String description = transaction.getDescription();
                 String amount = transaction.getAmount() + "";
-                rows.add(Arrays.asList(id, timeCreated, description, amount));
+                boolean important = transaction.isImportant();
+                rows.add(Arrays.asList(id, timeCreated, description, amount, important ? "*" : " "));
             }
         }
         System.out.println(Main.formatAsTable(rows));
@@ -265,6 +270,11 @@ class Main {
                     } catch (IndexOutOfBoundsException e) {
                         System.out.println("Element with id " + id + " not present in transaction history");
                     }
+                    try {
+                        manager.write(fl);
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save changes to file, try again later");
+                    }
                 }
                 case 4 -> {
                     System.out.println("Enter expense ID to unmark important: ");
@@ -273,6 +283,11 @@ class Main {
                         manager.getTransactions().get(id).setImportant(false);
                     } catch (IndexOutOfBoundsException e) {
                         System.out.println("Element with id " + id + " not present in transaction history");
+                    }
+                    try {
+                        manager.write(fl);
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save changes to file, try again later");
                     }
                 }
                 case 5 -> {
@@ -291,7 +306,8 @@ class Main {
                 case 6 -> {
                     System.out.print("Enter transaction description to delete: ");
                     String toDelete = sc.nextLine();
-                    if(manager.deleteTransaction(toDelete).getDescription().equals("null_trans")) System.out.println("No such transaction found");
+                    if (manager.deleteTransaction(toDelete).getDescription().equals("null_trans"))
+                        System.out.println("No such transaction found");
                     else System.out.println("Transaction deleted successfully");
                     try {
                         manager.write(fl);
@@ -346,7 +362,7 @@ class Main {
                 }
                 case 15 -> {
                     System.out.print("Deleting all user data: ");
-                    System.out.println(fl.delete()?"Successful" : "Unsuccessful");
+                    System.out.println(fl.delete() ? "Successful" : "Unsuccessful");
                     main(new String[0]);
                 }
                 default -> {
