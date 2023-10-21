@@ -201,24 +201,27 @@ class PersonalFinanceManager {
     }
 
     public void read(File fl) throws IOException {
-        fl.createNewFile();
+        boolean emptyFile = fl.createNewFile();
         DataInputStream dis = new DataInputStream(new FileInputStream(fl));
         transactions = new ArrayList<>();
-        try {
+        if (!emptyFile) {
             while (true) {
-                if (dis.readUTF().equals("Transaction:")) {
-                    String time = dis.readUTF();
-                    LocalDateTime parser = LocalDateTime.parse(time, dtf);
-                    String description = dis.readUTF();
-                    double amount = dis.readDouble();
-                    boolean important = dis.readBoolean();
-                    Transaction transaction = new Transaction(description, amount);
-                    transaction.setTime(parser);
-                    transaction.setImportant(important);
-                    transactions.add(transaction);
+                try {
+                    if (dis.readUTF().equals("Transaction:")) {
+                        String time = dis.readUTF();
+                        LocalDateTime parser = LocalDateTime.parse(time, dtf);
+                        String description = dis.readUTF();
+                        double amount = dis.readDouble();
+                        boolean important = dis.readBoolean();
+                        Transaction transaction = new Transaction(description, amount);
+                        transaction.setTime(parser);
+                        transaction.setImportant(important);
+                        transactions.add(transaction);
+                    }
+                } catch (EOFException ignored) {
+                    break;
                 }
             }
-        } catch (EOFException ignored) {
         }
         dis.close();
     }
@@ -446,15 +449,15 @@ class Main {
         int c = 0;
         System.out.println("\n|<=============== * " + header + " * ===============>|");
         do {
-            if (c > 0) System.out.println("\nInvalid choice, try again or press Ctrl+D to exit");
-            boolean hasExitFirst = options.get(0).equalsIgnoreCase("Exit") || options.get(0).equalsIgnoreCase("Go Back");
+            if (c > 0) System.out.println("\nInvalid choice, try again");
+            boolean hasExitOrGoBack = options.get(0).equalsIgnoreCase("Exit") || options.get(0).equalsIgnoreCase("Go Back");
             for (int i = 0; i < options.size(); i++) {
-                if (hasExitFirst && i == 0)
+                if (hasExitOrGoBack && i == 0)
                     continue;
-                printOption(i, options.get(i));
+                printOptions(i, options.get(i));
             }
-            if (hasExitFirst)
-                printOption(0, options.get(0));
+            if (hasExitOrGoBack)
+                printOptions(0, options.get(0));
             System.out.print("Select an option to proceed:");
             choice = sc.nextInt();
             c++;
@@ -483,8 +486,10 @@ class Main {
         return result.toString();
     }
 
-    static void printOption(int selNumber, String option) {
-        System.out.println("[" + selNumber + "] " + option);
+    static void printOptions(int opNumber, String option) {
+        String space = "  ";
+        if (opNumber > 9) space = " ";
+        System.out.println("[" + opNumber + "]" + space + option);
     }
 
     private static ArrayList<String> getMainMenuOptions() {
