@@ -114,7 +114,9 @@ class PersonalFinanceManager {
 
     public void displayImportant() {
         System.out.println("-".repeat(28) + " Important Transaction History " + "-".repeat(28));
-        String[][] rows = new String[transactions.length + 1][4];
+        int l = 0;
+        for (Transaction transaction : transactions) if (transaction.isImportant()) l++;
+        String[][] rows = new String[l + 1][4];
         rows[0] = new String[]{"ID", "Date", "Time", "Description", "Amount(" + currencySymbol + ")"};
         for (int i = 0; i < transactions.length; i++) {
             if (transactions[i].isImportant()) {
@@ -127,7 +129,9 @@ class PersonalFinanceManager {
 
     public void displayOptional() {
         System.out.println("-".repeat(28) + " Optional Transaction History " + "-".repeat(28));
-        String[][] rows = new String[transactions.length + 1][4];
+        int l = 0;
+        for (Transaction transaction : transactions) if (!(transaction.isImportant())) l++;
+        String[][] rows = new String[l + 1][4];
         rows[0] = new String[]{"ID", "Date", "Time", "Description", "Amount(" + currencySymbol + ")"};
         for (int i = 0; i < transactions.length; i++) {
             if (!(transactions[i].isImportant())) {
@@ -153,7 +157,11 @@ class PersonalFinanceManager {
 
     public void displayByDate(String date) {
         System.out.println("-".repeat(28) + " Transactions on " + date + "-".repeat(28));
-        String[][] rows = new String[transactions.length + 1][5]; // Adding 1 for headers
+        int l = 0;
+        for (Transaction transaction : transactions) {
+            if (date.equalsIgnoreCase(Main.parseDateToString(transaction.getTime()).split(" ")[0])) l++;
+        }
+        String[][] rows = new String[l + 1][5]; // Adding 1 for headers
         String[] headers = {"ID", "Time", "Description", "Amount(" + currencySymbol + ")", "Important"};
         rows[0] = headers;
         int rowCount = 1; // Start from the first row (after headers)
@@ -175,13 +183,17 @@ class PersonalFinanceManager {
     }
 
 
-    public Transaction deleteTransaction(String description) {
-        Transaction deleted = new Transaction("null_trans", 0);
-        for (int i = 0; i < transactions.length; i++) {
-            Transaction transaction = transactions[i];
-            if (transaction.getDescription().equalsIgnoreCase(description)) {
-                deleted = transaction;
-                remove(i);
+    public boolean deleteTransaction(String description) {
+        boolean deleted = false;
+        int delCount = 0;
+        for (Transaction transaction : transactions)
+            if (transaction.getDescription().equalsIgnoreCase(description)) delCount++;
+        for (int c = 0; c < delCount; c++) {
+            for (int i = 0; i < transactions.length; i++) {
+                if (transactions[i].getDescription().equalsIgnoreCase(description)) {
+                    deleted = true;
+                    remove(i);
+                }
             }
         }
         return deleted;
@@ -373,9 +385,9 @@ class Main {
                 case 6 -> {
                     System.out.print("Enter transaction description to delete: ");
                     String toDelete = sc.nextLine();
-                    if (manager.deleteTransaction(toDelete).getDescription().equals("null_trans"))
-                        System.out.println("No such transaction found");
-                    else System.out.println("Transaction deleted successfully");
+                    if (manager.deleteTransaction(toDelete))
+                        System.out.println("Transaction deleted successfully");
+                    else System.out.println("No such transaction found");
                     try {
                         manager.write(fl);
                     } catch (IOException e) {
@@ -415,15 +427,32 @@ class Main {
                 }
                 case 8 -> System.out.println("Total income recorded: " + manager.totalIncome());
                 case 9 -> System.out.println("Total expenditure recorded: " + manager.totalExpenses());
-                case 10 ->
-                        System.out.println("Current Balance: " + manager.currencySymbol + " " + manager.getBalance());
-                case 11 -> manager.displayImportant();
-                case 12 -> manager.displayOptional();
-                case 13 -> manager.displayTransactions();
+                case 10 -> {
+                    System.out.println("Current Balance: " + manager.currencySymbol + " " + manager.getBalance());
+                    System.out.print("Press Enter to continue....");
+                    sc.nextLine();
+                }
+                case 11 -> {
+                    manager.displayImportant();
+                    System.out.print("Press Enter to continue....");
+                    sc.nextLine();
+                }
+                case 12 -> {
+                    manager.displayOptional();
+                    System.out.print("Press Enter to continue....");
+                    sc.nextLine();
+                }
+                case 13 -> {
+                    manager.displayTransactions();
+                    System.out.print("Press Enter to continue....");
+                    sc.nextLine();
+                }
                 case 14 -> {
                     System.out.println("Enter date to filter(yyyy/MM/dd): ");
                     String date = sc.nextLine();
                     manager.displayByDate(date);
+                    System.out.print("Press Enter to continue....");
+                    sc.nextLine();
                 }
                 case 15 -> {
                     System.out.print("Deleting all user data: ");
@@ -530,7 +559,7 @@ class Main {
         int minutes = Integer.parseInt(time.split(":")[1]);
         int seconds = Integer.parseInt(time.split(":")[2]);
         Calendar calendar = Calendar.getInstance();
-        calendar.set(years - 1900, months, days, hours, minutes, seconds);
+        calendar.set(years, months, days, hours, minutes, seconds);
         return calendar.getTime();
     }
 
