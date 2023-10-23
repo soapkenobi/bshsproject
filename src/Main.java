@@ -301,16 +301,16 @@ class Main {
 
     public static void main(String[] args) {
         folder = new File("userinfo");
-        folder.mkdir();
         fl = new File("userinfo/transactionHistory.log");
         cfl = new File("userinfo/user.currency");
-        sc = new Scanner(System.in);
-        fc = new FinancialCalculators(sc);
         if (args.length > 0 && args[0].equalsIgnoreCase("--rem")) {
             boolean deleted = fl.delete() && cfl.delete();
             System.out.println(deleted ? "All files deleted successfully" : "Some files couldn't be deleted, these may not have existed");
             System.exit(0);
         }
+        if(!folder.exists()) folder.mkdirs();
+        sc = new Scanner(System.in);
+        fc = new FinancialCalculators(sc);
         try {
             currency = setCurrency();
         } catch (IOException ignored) {
