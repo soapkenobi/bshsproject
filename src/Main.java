@@ -292,19 +292,63 @@ class FinancialCalculators {
 
 class Main {
     static File fl;
+    static File folder;
+    static File cfl;
     static Scanner sc;
     static FinancialCalculators fc;
     static PersonalFinanceManager manager;
     static Currency currency;
 
     public static void main(String[] args) {
-        fl = new File("transactionHistory.log");
+        folder = new File("userinfo");
+        folder.mkdir();
+        fl = new File("userinfo/transactionHistory.log");
+        cfl = new File("userinfo/user.currency");
         sc = new Scanner(System.in);
         fc = new FinancialCalculators(sc);
-        System.out.println("Enter your currency(for example, INR for Indian Rupees):");
-        currency = Currency.getInstance(sc.next().toUpperCase());
+        if (args.length > 0 && args[0].equalsIgnoreCase("--rem")) {
+            boolean deleted = fl.delete() && cfl.delete();
+            System.out.println(deleted ? "All files deleted successfully" : "Some files couldn't be deleted, these may not have existed");
+            System.exit(0);
+        }
+        try {
+            currency = setCurrency();
+        } catch (IOException ignored) {
+        }
         manager = new PersonalFinanceManager(currency);
         mainMenu();
+    }
+
+    static Currency setCurrency() throws IOException {
+        String cr;
+        try {
+            DataInputStream dis = new DataInputStream(new FileInputStream(cfl));
+            cr = dis.readUTF();
+            dis.close();
+        } catch (IOException i) {
+            System.out.println("Enter your currency(for example, INR for Indian Rupees): ");
+            cr = setCurrency(sc.next()).getCurrencyCode();
+        }
+        return Currency.getInstance(cr);
+    }
+
+    static Currency setCurrency(String cr) throws IOException {
+        try {
+            cr = cr.substring(0, 3);
+        } catch (StringIndexOutOfBoundsException e) {
+            System.out.println("Invalid data, setting currency to INR");
+            cr = "INR";
+        }
+        DataOutputStream dos = new DataOutputStream(new FileOutputStream(cfl));
+        try {
+            Currency.getInstance(cr);
+        } catch (IllegalArgumentException i) {
+            System.out.println("Invalid data, setting currency to INR");
+            cr = "INR";
+        }
+        dos.writeUTF(cr);
+        dos.close();
+        return Currency.getInstance(cr);
     }
 
     static void mainMenu() {
@@ -385,8 +429,7 @@ class Main {
                 case 6 -> {
                     System.out.print("Enter transaction description to delete: ");
                     String toDelete = sc.nextLine();
-                    if (manager.deleteTransaction(toDelete))
-                        System.out.println("Transaction deleted successfully");
+                    if (manager.deleteTransaction(toDelete)) System.out.println("Transaction deleted successfully");
                     else System.out.println("No such transaction found");
                     try {
                         manager.write(fl);
@@ -413,7 +456,7 @@ class Main {
                                 manager.getTransactions()[toEdit].setAmount(newAmount);
                             }
                             case 3 -> {
-                                System.out.print("Enter new date and time(format yyyy/MM/dd HH:mm:ss):");
+                                System.out.print("Enter new date and time(format yyyy/MM/dd HH:mm:ss): ");
                                 String inputDateTime = sc.nextLine();
                                 manager.getTransactions()[toEdit].setTime(parseDate(inputDateTime));
                             }
@@ -455,18 +498,13 @@ class Main {
                     sc.nextLine();
                 }
                 case 15 -> {
-                    System.out.print("Deleting all user data: ");
-                    System.out.println(fl.delete() ? "Successful" : "Unsuccessful");
-                    manager = new PersonalFinanceManager(currency);
-                }
-                case 16 -> {
                     Transaction tr = fc.recurringDeposit();
                     char ch;
                     System.out.println("Would you like to add the maturity value as an income transaction?(Y/N)");
                     ch = sc.next().charAt(0);
                     if (ch == 'Y' || ch == 'y') manager.addTransaction(tr);
                 }
-                case 17 -> {
+                case 16 -> {
                     Transaction tr = fc.simpleInterest();
                     char ch;
                     System.out.println("Would you like to add the interest as an income transaction?(Y/N)");
@@ -474,11 +512,25 @@ class Main {
                     if (ch == 'Y' || ch == 'y') manager.addTransaction(tr);
                 }
 
-                case 18 -> {
+                case 17 -> {
+                    try {
+                        new DataOutputStream(new FileOutputStream(cfl));
+                    } catch (IOException ignored) {
+                    }
                     System.out.print("Enter new currency code(for example, USD for United States Dollar): ");
-                    Currency currency = Currency.getInstance(sc.next().toUpperCase());
+                    try {
+                        currency = setCurrency(sc.next());
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save currency data");
+                    }
                     manager.setCurrencySymbol(currency.getCurrencyCode());
                     System.out.println("Changed Currency Symbol To: " + currency.getCurrencyCode());
+                }
+
+                case 18 -> {
+                    System.out.print("Deleting all user data: ");
+                    System.out.println(fl.delete() ? "Successful" : "Unsuccessful");
+                    manager = new PersonalFinanceManager(currency);
                 }
                 default -> {
                     System.out.println("Exiting...");
@@ -505,7 +557,7 @@ class Main {
                 printOptions(i, options[i]);
             }
             if (hasExitOrGoBack) printOptions(0, options[0]);
-            System.out.print("Select an option to proceed:");
+            System.out.print("Select an option to proceed: ");
             choice = sc.nextInt();
             c++;
         } while (choice < 0 || choice >= options.length);
@@ -545,15 +597,35 @@ class Main {
         System.out.println("[" + opNumber + "]" + space + option);
     }
 
-    private static String[] getMainMenuOptions() {
-        return new String[]{"Exit", "Add Income", "Add Expense", "Mark Transaction Important", "Unmark Transaction Important", "Delete Transaction by ID", "Delete Transactions by Description", "Edit Transaction", "View Total Income", "View Total Expenditure", "View Balance", "View Important Transactions", "View Optional Transactions", "View Transaction History", "View Transactions By Date", "Delete All Transaction Records", "Calculate Maturity Value Of Recurring Deposit", "Calculate Simple Interest", "Change Currency"};
+    public static String[] getMainMenuOptions() {
+        String[] options = new String[19];
+        options[0] = "Exit";
+        options[1] = "Add Income";
+        options[2] = "Add Expense";
+        options[3] = "Mark Transaction Important";
+        options[4] = "Unmark Transaction Important";
+        options[5] = "Delete Transaction by ID";
+        options[6] = "Delete Transactions by Description";
+        options[7] = "Edit Transaction";
+        options[8] = "View Total Income";
+        options[9] = "View Total Expenditure";
+        options[10] = "View Balance";
+        options[11] = "View Important Transactions";
+        options[12] = "View Optional Transactions";
+        options[13] = "View Transaction History";
+        options[14] = "View Transactions By Date";
+        options[15] = "Calculate Maturity Value Of Recurring Deposit";
+        options[16] = "Calculate Simple Interest";
+        options[17] = "Change Display Currency";
+        options[18] = "Delete All Transaction Records";
+        return options;
     }
 
     public static Date parseDate(String input) {
         String date = input.split(" ")[0];
         String time = input.split(" ")[1];
         int years = Integer.parseInt(date.split("/")[0]);
-        int months = Integer.parseInt(date.split("/")[1]);
+        int months = Integer.parseInt(date.split("/")[1]) - 1;
         int days = Integer.parseInt(date.split("/")[2]);
         int hours = Integer.parseInt(time.split(":")[0]);
         int minutes = Integer.parseInt(time.split(":")[1]);
@@ -568,7 +640,9 @@ class Main {
         calendar.setTime(date);
         String str = "";
         str += calendar.get(Calendar.YEAR) + "/";
-        str += calendar.get(Calendar.MONTH) + "/";
+        if (calendar.get(Calendar.MONTH) <= 9) str += "0";
+        str += (calendar.get(Calendar.MONTH) + 1) + "/";
+        if (calendar.get(Calendar.DAY_OF_MONTH) <= 9) str += "0";
         str += calendar.get(Calendar.DAY_OF_MONTH) + " ";
         if (calendar.get(Calendar.HOUR_OF_DAY) <= 9) str += "0";
         str += calendar.get(Calendar.HOUR_OF_DAY) + ":";
