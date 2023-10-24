@@ -461,6 +461,8 @@ class Main {
                                 manager.getTransactions()[toEdit].setTime(parseDate(inputDateTime));
                             }
                         }
+                    } else {
+                        System.out.println("No such transaction found...");
                     }
                     try {
                         manager.write(fl);
