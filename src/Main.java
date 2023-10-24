@@ -308,7 +308,7 @@ class Main {
             System.out.println(deleted ? "All files deleted successfully" : "Some files couldn't be deleted, these may not have existed");
             System.exit(0);
         }
-        if(!folder.exists()) folder.mkdirs();
+        if (!folder.exists() && folder.mkdirs()) System.out.println("Welcome, user");
         sc = new Scanner(System.in);
         fc = new FinancialCalculators(sc);
         try {
@@ -548,15 +548,21 @@ class Main {
     static int menu(String header, String[] options) {
         int choice;
         int c = 0;
-        System.out.println("\n|<=============== * " + header + " * ===============>|");
+        System.out.println("-".repeat(("                  * " + header + " *                  ").length()));
+        System.out.println("                  * " + header + " *                  ");
+        //System.out.println("\n|<=============== * " + header + " * ===============>|");
+        System.out.println("-".repeat(("                  * " + header + " *                  ").length()));
         do {
             if (c > 0) System.out.println("\nInvalid choice, try again");
             boolean hasExitOrGoBack = options[0].equalsIgnoreCase("Exit") || options[0].equalsIgnoreCase("Go Back");
             for (int i = 0; i < options.length; i++) {
                 if (hasExitOrGoBack && i == 0) continue;
-                printOptions(i, options[i]);
+                printOptions(("                  * " + header + " *                  ").length(), i, options[i]);
             }
-            if (hasExitOrGoBack) printOptions(0, options[0]);
+            System.out.println();
+            if (hasExitOrGoBack)
+                printOptions(("                  * " + header + " *                  ").length(), 0, options[0]);
+            System.out.println();
             System.out.print("Select an option to proceed: ");
             choice = sc.nextInt();
             c++;
@@ -591,10 +597,10 @@ class Main {
         return result.toString();
     }
 
-    static void printOptions(int opNumber, String option) {
+    static void printOptions(int heaaderLength, int opNumber, String option) {
         String space = "  ";
         if (opNumber > 9) space = " ";
-        System.out.println("[" + opNumber + "]" + space + option);
+        System.out.println(" ".repeat(heaaderLength / 6) + opNumber + "." + space + option);
     }
 
     public static String[] getMainMenuOptions() {
