@@ -356,10 +356,9 @@ class Main {
             try {
                 manager.read(fl);
             } catch (IOException e) {
-                System.out.println("ERROR: Couldn't read file");
-                System.exit(0);
+                System.out.println("ERROR: Couldn't read data file");
             }
-            int choice = menu("Personal Money Management Application", getMainMenuOptions());
+            int choice = menu("\033[1mPersonal Money Management Application\033[0m", getMainMenuOptions());
             switch (choice) {
                 case 1 -> {
                     System.out.print("Enter income description: ");
@@ -550,59 +549,54 @@ class Main {
     static int menu(String header, String[] options) {
         int choice;
         int c = 0;
-        System.out.println("-".repeat(("                  * " + header + " *                  ").length()));
-        System.out.println("                  * " + header + " *                  ");
-        //System.out.println("\n|<=============== * " + header + " * ===============>|");
-        System.out.println("-".repeat(("                  * " + header + " *                  ").length()));
+        String headerFull = "                  * " + header + " *                  ";
+        System.out.println("-".repeat(headerFull.length()));
+        System.out.println(headerFull);
+        System.out.println("-".repeat(headerFull.length()));
         do {
             if (c > 0) System.out.println("\nInvalid choice, try again");
             boolean hasExitOrGoBack = options[0].equalsIgnoreCase("Exit") || options[0].equalsIgnoreCase("Go Back");
             for (int i = 0; i < options.length; i++) {
                 if (hasExitOrGoBack && i == 0) continue;
-                printOptions(("                  * " + header + " *                  ").length(), i, options[i]);
+                printOptions(headerFull.length(), i, options[i]);
             }
             System.out.println();
             if (hasExitOrGoBack)
-                printOptions(("                  * " + header + " *                  ").length(), 0, options[0]);
+                printOptions(headerFull.length(), 0, options[0]);
             System.out.println();
             System.out.print("Select an option to proceed: ");
             choice = sc.nextInt();
             c++;
         } while (choice < 0 || choice >= options.length);
-        System.out.println("=".repeat(("|<=============== * " + header + " * ===============>|").length()));
+        System.out.println("=".repeat(headerFull.length()));
         sc.nextLine();
         return choice;
     }
 
     public static String formatAsTable(String[][] rows) {
         int columnCount = rows[0].length;
-
         int[] maxLengths = new int[columnCount];
-
         for (String[] strings : rows) {
             for (int col = 0; col < columnCount; col++) {
                 maxLengths[col] = Math.max(maxLengths[col], strings[col].length());
             }
         }
-
         StringBuilder formatBuilder = new StringBuilder();
         for (int maxLength : maxLengths) {
             formatBuilder.append("%-").append(maxLength + 2).append("s");
         }
         String format = formatBuilder.toString();
-
         StringBuilder result = new StringBuilder();
         for (String[] strings : rows) {
             result.append(String.format(format, (Object[]) strings)).append("\n");
         }
-
         return result.toString();
     }
 
-    static void printOptions(int heaaderLength, int opNumber, String option) {
+    static void printOptions(int headerLength, int opNumber, String option) {
         String space = "  ";
         if (opNumber > 9) space = " ";
-        System.out.println(" ".repeat(heaaderLength / 6) + opNumber + "." + space + option);
+        System.out.println(" ".repeat(headerLength / 6) + opNumber + "." + space + option);
     }
 
     public static String[] getMainMenuOptions() {
