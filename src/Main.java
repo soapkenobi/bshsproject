@@ -102,18 +102,27 @@ class PersonalFinanceManager {
     }
 
     public void displayTransactions() {
-        System.out.println("-".repeat(28) + " Transaction History " + "-".repeat(28));
+        String header = "";
+        for (int i = 0; i < 28; i++) header = header.concat("-");
+        header += " Transaction History ";
+        for (int i = 0; i < 28; i++) header = header.concat("-");
+        System.out.println(header);
         String[][] rows = new String[transactions.length + 1][5];
         rows[0] = new String[]{"ID", "Date", "Time", "Description", "Amount(" + currencySymbol + ")", "Important"};
         for (int i = 0; i < transactions.length; i++) {
             displayTransaction(rows, i, true);
         }
         System.out.println(Main.formatAsTable(rows));
-        System.out.println("-".repeat(("-".repeat(28) + " Transaction History " + "-".repeat(28)).length()));
+        for (int i = 0; i < header.length(); i++) System.out.print("-");
+        System.out.println();
     }
 
     public void displayImportant() {
-        System.out.println("-".repeat(28) + " Important Transaction History " + "-".repeat(28));
+        String header = "";
+        for (int i = 0; i < 28; i++) header = header.concat("-");
+        header += " Important Transaction History ";
+        for (int i = 0; i < 28; i++) header = header.concat("-");
+        System.out.println(header);
         int l = 0;
         for (Transaction transaction : transactions) if (transaction.isImportant()) l++;
         String[][] rows = new String[l + 1][4];
@@ -124,11 +133,16 @@ class PersonalFinanceManager {
             }
         }
         System.out.println(Main.formatAsTable(rows));
-        System.out.println("-".repeat(("-".repeat(28) + " Important Transaction History " + "-".repeat(28)).length()));
+        for (int i = 0; i < header.length(); i++) System.out.print("-");
+        System.out.println();
     }
 
     public void displayOptional() {
-        System.out.println("-".repeat(28) + " Optional Transaction History " + "-".repeat(28));
+        String header = "";
+        for (int i = 0; i < 28; i++) header = header.concat("-");
+        header += " Optional Transaction History ";
+        for (int i = 0; i < 28; i++) header = header.concat("-");
+        System.out.println(header);
         int l = 0;
         for (Transaction transaction : transactions) if (!(transaction.isImportant())) l++;
         String[][] rows = new String[l + 1][4];
@@ -139,7 +153,8 @@ class PersonalFinanceManager {
             }
         }
         System.out.println(Main.formatAsTable(rows));
-        System.out.println("-".repeat(("-".repeat(28) + " Optional Transaction History " + "-".repeat(28)).length()));
+        for (int i = 0; i < header.length(); i++) System.out.print("-");
+        System.out.println();
     }
 
     private void displayTransaction(String[][] rows, int i, boolean showImportant) {
@@ -156,7 +171,11 @@ class PersonalFinanceManager {
     }
 
     public void displayByDate(String date) {
-        System.out.println("-".repeat(28) + " Transactions on " + date + "-".repeat(28));
+        String header = "";
+        for (int i = 0; i < 28; i++) header = header.concat("-");
+        header += " Transactions on " + date;
+        for (int i = 0; i < 28; i++) header = header.concat("-");
+        System.out.println(header);
         int l = 0;
         for (Transaction transaction : transactions) {
             if (date.equalsIgnoreCase(Main.parseDateToString(transaction.getTime()).split(" ")[0])) l++;
@@ -177,9 +196,9 @@ class PersonalFinanceManager {
                 rowCount++;
             }
         }
-        String table = Main.formatAsTable(rows);
-        System.out.println(table);
-        System.out.println("-".repeat(table.length()));
+        System.out.println(Main.formatAsTable(rows));
+        for (int i = 0; i < header.length(); i++) System.out.print("-");
+        System.out.println();
     }
 
 
@@ -360,7 +379,7 @@ class Main {
             }
             int choice = menu("\033[1mPersonal Money Management Application\033[0m", getMainMenuOptions());
             switch (choice) {
-                case 1 -> {
+                case 1: {
                     System.out.print("Enter income description: ");
                     String incomeDescription = sc.nextLine();
                     System.out.print("Enter income amount: " + manager.currencySymbol + " ");
@@ -371,8 +390,9 @@ class Main {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes to file, try again later");
                     }
+                    break;
                 }
-                case 2 -> {
+                case 2: {
                     System.out.print("Enter expense description: ");
                     String expenseDescription = sc.nextLine();
                     System.out.print("Enter expense amount: " + manager.currencySymbol + " ");
@@ -383,8 +403,9 @@ class Main {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes to file, try again later");
                     }
+                    break;
                 }
-                case 3 -> {
+                case 3: {
                     System.out.println("Enter transaction ID to mark important: ");
                     int id = sc.nextInt();
                     try {
@@ -397,8 +418,9 @@ class Main {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes to file, try again later");
                     }
+                    break;
                 }
-                case 4 -> {
+                case 4: {
                     System.out.println("Enter transaction ID to unmark important: ");
                     int id = sc.nextInt();
                     try {
@@ -411,8 +433,9 @@ class Main {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes to file, try again later");
                     }
+                    break;
                 }
-                case 5 -> {
+                case 5: {
                     System.out.print("Enter transaction ID to delete: ");
                     int toDelete = sc.nextInt();
                     if (toDelete < manager.getTransactions().length && toDelete >= 0) {
@@ -424,8 +447,9 @@ class Main {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes to file, try again later");
                     }
+                    break;
                 }
-                case 6 -> {
+                case 6: {
                     System.out.print("Enter transaction description to delete: ");
                     String toDelete = sc.nextLine();
                     if (manager.deleteTransaction(toDelete)) System.out.println("Transaction deleted successfully");
@@ -435,8 +459,9 @@ class Main {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes to file, try again later");
                     }
+                    break;
                 }
-                case 7 -> {
+                case 7: {
                     System.out.print("Enter transaction ID to edit: ");
                     int toEdit = sc.nextInt();
                     boolean exists = manager.getTransactions().length > toEdit;
@@ -444,20 +469,23 @@ class Main {
                     if (exists) {
                         menuOptions = new String[]{"Go Back", "Description", "Amount", "Time of Creation"};
                         switch (menu("What would you like to edit?", menuOptions)) {
-                            case 1 -> {
+                            case 1: {
                                 System.out.print("Enter new description for transaction: ");
                                 String str = sc.nextLine();
                                 manager.getTransactions()[toEdit].setDescription(str);
+                                break;
                             }
-                            case 2 -> {
+                            case 2: {
                                 System.out.print("Enter updated amount for transaction: ");
                                 double newAmount = sc.nextDouble();
                                 manager.getTransactions()[toEdit].setAmount(newAmount);
+                                break;
                             }
-                            case 3 -> {
+                            case 3: {
                                 System.out.print("Enter new date and time(format yyyy/MM/dd HH:mm:ss): ");
                                 String inputDateTime = sc.nextLine();
                                 manager.getTransactions()[toEdit].setTime(parseDate(inputDateTime));
+                                break;
                             }
                         }
                     } else {
@@ -468,52 +496,64 @@ class Main {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes to file, try again later");
                     }
+                    break;
                 }
-                case 8 -> System.out.println("Total income recorded: " + manager.totalIncome());
-                case 9 -> System.out.println("Total expenditure recorded: " + manager.totalExpenses());
-                case 10 -> {
+                case 8:
+                    System.out.println("Total income recorded: " + manager.totalIncome());
+                    break;
+                case 9:
+                    System.out.println("Total expenditure recorded: " + manager.totalExpenses());
+                    break;
+                case 10: {
                     System.out.println("Current Balance: " + manager.currencySymbol + " " + manager.getBalance());
                     System.out.print("Press Enter to continue....");
                     sc.nextLine();
+                    break;
                 }
-                case 11 -> {
+                case 11: {
                     manager.displayImportant();
                     System.out.print("Press Enter to continue....");
                     sc.nextLine();
+                    break;
                 }
-                case 12 -> {
+                case 12: {
                     manager.displayOptional();
                     System.out.print("Press Enter to continue....");
                     sc.nextLine();
+                    break;
                 }
-                case 13 -> {
+                case 13: {
                     manager.displayTransactions();
                     System.out.print("Press Enter to continue....");
                     sc.nextLine();
+                    break;
                 }
-                case 14 -> {
+                case 14: {
                     System.out.println("Enter date to filter(yyyy/MM/dd): ");
                     String date = sc.nextLine();
                     manager.displayByDate(date);
                     System.out.print("Press Enter to continue....");
                     sc.nextLine();
+                    break;
                 }
-                case 15 -> {
+                case 15: {
                     Transaction tr = fc.recurringDeposit();
                     char ch;
                     System.out.println("Would you like to add the maturity value as an income transaction?(Y/N)");
                     ch = sc.next().charAt(0);
                     if (ch == 'Y' || ch == 'y') manager.addTransaction(tr);
+                    break;
                 }
-                case 16 -> {
+                case 16: {
                     Transaction tr = fc.simpleInterest();
                     char ch;
                     System.out.println("Would you like to add the interest as an income transaction?(Y/N)");
                     ch = sc.next().charAt(0);
                     if (ch == 'Y' || ch == 'y') manager.addTransaction(tr);
+                    break;
                 }
 
-                case 17 -> {
+                case 17: {
                     try {
                         new DataOutputStream(new FileOutputStream(cfl));
                     } catch (IOException ignored) {
@@ -526,14 +566,16 @@ class Main {
                     }
                     manager.setCurrencySymbol(currency.getCurrencyCode());
                     System.out.println("Changed Currency Symbol To: " + currency.getCurrencyCode());
+                    break;
                 }
 
-                case 18 -> {
+                case 18: {
                     System.out.print("Deleting all user data: ");
                     System.out.println(fl.delete() ? "Successful" : "Unsuccessful");
                     manager = new PersonalFinanceManager(currency);
+                    break;
                 }
-                default -> {
+                default: {
                     System.out.println("Exiting...");
                     System.exit(0);
                     try {
@@ -541,6 +583,7 @@ class Main {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes to file, try again later");
                     }
+                    break;
                 }
             }
         }
@@ -550,9 +593,11 @@ class Main {
         int choice;
         int c = 0;
         String headerFull = "                  * " + header + " *                  ";
-        System.out.println("-".repeat(headerFull.length()));
+        for (int i = 0; i < headerFull.length(); i++) System.out.print("-");
+        System.out.println();
         System.out.println(headerFull);
-        System.out.println("-".repeat(headerFull.length()));
+        for (int i = 0; i < headerFull.length(); i++) System.out.print("-");
+        System.out.println();
         do {
             if (c > 0) System.out.println("\nInvalid choice, try again");
             boolean hasExitOrGoBack = options[0].equalsIgnoreCase("Exit") || options[0].equalsIgnoreCase("Go Back");
@@ -568,7 +613,8 @@ class Main {
             choice = sc.nextInt();
             c++;
         } while (choice < 0 || choice >= options.length);
-        System.out.println("=".repeat(headerFull.length()));
+        for (int i = 0; i < headerFull.length(); i++) System.out.print("=");
+        System.out.println();
         sc.nextLine();
         return choice;
     }
@@ -596,7 +642,8 @@ class Main {
     static void printOptions(int headerLength, int opNumber, String option) {
         String space = "  ";
         if (opNumber > 9) space = " ";
-        System.out.println(" ".repeat(headerLength / 6) + opNumber + "." + space + option);
+        for (int i = 0; i < headerLength / 6; i++) System.out.print(" ");
+        System.out.println(opNumber + "." + space + option);
     }
 
     public static String[] getMainMenuOptions() {

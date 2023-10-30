@@ -117,8 +117,9 @@ class PlayerManager {
     }
 
     public boolean isPlayer(String name) {
-        for (Player player : players) if (player.getName().equalsIgnoreCase(name)) return true;
-        return true;
+        for (Player player : players)
+            if (player.getName().equalsIgnoreCase(name)) return true;
+        return false;
     }
 
     public int getPlayerIndex(String name) {
@@ -303,7 +304,7 @@ public class test2 {
             game = new Game(wordList.getWords(), playerManager, sc);
             int ch = menu("Hangman", getMainMenuOptions());
             switch (ch) {
-                case 1 -> {
+                case 1: {
                     System.out.print("Enter player name: ");
                     String name = sc.nextLine();
                     if (playerManager.isPlayer(name)) {
@@ -316,8 +317,9 @@ public class test2 {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes");
                     }
+                    break;
                 }
-                case 2 -> {
+                case 2: {
                     System.out.println("Enter player current name: ");
                     String oldName = sc.nextLine();
                     if (playerManager.isPlayer(oldName)) {
@@ -331,8 +333,9 @@ public class test2 {
                     } else {
                         System.out.println("No such player found");
                     }
+                    break;
                 }
-                case 3 -> {
+                case 3: {
                     System.out.println("Enter player name: ");
                     String name = sc.nextLine();
                     playerManager.deletePlayer(name);
@@ -341,16 +344,18 @@ public class test2 {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes");
                     }
+                    break;
                 }
-                case 4 -> {
+                case 4: {
                     game.play();
                     try {
                         playerManager.write(fl);
                     } catch (IOException e) {
                         System.out.println("Couldn't save game data");
                     }
+                    break;
                 }
-                case 5 -> {
+                case 5: {
                     System.out.print("Enter player name to reset: ");
                     String name = sc.nextLine();
                     playerManager.deletePlayer(name);
@@ -360,14 +365,18 @@ public class test2 {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes");
                     }
+                    break;
                 }
-                case 6 -> playerManager.displayAllPlayers();
-                case 7 -> {
+                case 6:
+                    playerManager.displayAllPlayers();
+                    break;
+                case 7: {
                     System.out.print("Enter player name to view card: ");
                     String name = sc.nextLine();
                     playerManager.displayPlayerCard(name);
+                    break;
                 }
-                case 8 -> {
+                case 8: {
                     System.out.println("Enter word to add");
                     String word = sc.nextLine();
                     wordList.add(word);
@@ -376,11 +385,15 @@ public class test2 {
                     } catch (IOException e) {
                         System.out.println("Couldn't save changes");
                     }
+                    break;
                 }
-                case 9 -> wordList.delete();
-                default -> {
+                case 9:
+                    wordList.delete();
+                    break;
+                default: {
                     System.out.println("Exiting...");
                     System.exit(0);
+                    break;
                 }
             }
         }
@@ -405,7 +418,9 @@ public class test2 {
             choice = sc.nextInt();
             c++;
         } while (choice < 0 || choice >= options.length);
-        System.out.println("=".repeat(("================= * " + header + " * =================").length()));
+        for (int i = 0; i < ("================= * " + header + " * =================").length(); i++)
+            System.out.print("=");
+        System.out.println();
         sc.nextLine();
         return choice;
     }
@@ -413,7 +428,8 @@ public class test2 {
     static void printOptions(int heaaderLength, int opNumber, String option) {
         String space = "  ";
         if (opNumber > 9) space = " ";
-        System.out.println(" ".repeat(heaaderLength / 6) + opNumber + "." + space + option);
+        for (int i = 1; i <= heaaderLength / 6; i++) System.out.print(" ");
+        System.out.println(opNumber + "." + space + option);
     }
 
     static String[] getMainMenuOptions() {

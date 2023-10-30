@@ -1,9 +1,9 @@
 # Project exclude paths
 /out/
-/src/test.java
 /src/testsandbox.java
 /alumni.db
 /userinfo
 /test.dat
+/wordlist.dat
 /test
 /transactionHistory.log
