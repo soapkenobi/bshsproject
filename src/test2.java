@@ -109,7 +109,7 @@ class PlayerManager {
                 player.setRoundCount(roundCount);
                 player.setScore(score);
                 add(player);
-            } catch (EOFException e){
+            } catch (EOFException e) {
                 break;
             }
         }
@@ -153,9 +153,9 @@ class PlayerManager {
 }
 
 class Game {
-    private String[] wordList;
-    private PlayerManager manager;
-    private Scanner sc;
+    private final String[] wordList;
+    private final PlayerManager manager;
+    private final Scanner sc;
 
     public Game(String[] wordList, PlayerManager manager, Scanner sc) {
         this.sc = sc;
@@ -190,8 +190,8 @@ class Game {
                 continue;
             }
             for (int i = 0; i < word.length; i++) {
-                if (word[i] == guess) {
-                    guessedWord[i] = guess;
+                if ((word[i] + "").equalsIgnoreCase(guess + "")) {
+                    guessedWord[i] = word[i];
                     lives++;
                 }
             }
@@ -206,7 +206,7 @@ class Game {
         if (array1.length == array2.length) {
             boolean equal = true;
             for (int i = 0; i < array1.length; i++) {
-                if (array1[i] != array2[i]) {
+                if (!(array1[i] + "").equalsIgnoreCase(array2[i] + "")) {
                     equal = false;
                     break;
                 }
@@ -227,18 +227,69 @@ class Game {
     }
 }
 
+class WordList {
+    private String[] wordlist;
+    private final File wordListFile;
+
+    WordList(File wordListFile) {
+        wordlist = new String[0];
+        this.wordListFile = wordListFile;
+    }
+
+    public void write() throws IOException {
+        DataOutputStream dos = new DataOutputStream(new FileOutputStream(wordListFile));
+        for (String word : wordlist)
+            dos.writeUTF(word);
+        dos.close();
+    }
+
+    public void read() throws IOException {
+        wordListFile.createNewFile();
+        DataInputStream dis = new DataInputStream(new FileInputStream(wordListFile));
+        wordlist = new String[0];
+        while (true) {
+            try {
+                String word = dis.readUTF();
+                add(word);
+            } catch (EOFException e) {
+                break;
+            }
+        }
+        dis.close();
+    }
+
+    public void add(String word) {
+        String[] tempList = wordlist;
+        wordlist = new String[tempList.length + 1];
+        System.arraycopy(tempList, 0, wordlist, 0, tempList.length);
+        wordlist[wordlist.length - 1] = word;
+    }
+
+    public void delete() {
+        wordListFile.deleteOnExit();
+        System.out.println("Word List deleted, exiting program...");
+        System.exit(0);
+    }
+
+    public String[] getWords() {
+        if (wordlist.length == 0) return new String[]{"hangman", "game", "rose", "aditya", "sahoo"};
+        return wordlist;
+    }
+}
+
 public class test2 {
     static File fl;
     static Scanner sc;
     static PlayerManager playerManager;
     static Game game;
+    static WordList wordList;
 
     public static void main(String[] args) throws IOException {
         fl = new File("hangman.dat");
         fl.createNewFile();
         sc = new Scanner(System.in);
         playerManager = new PlayerManager();
-        game = new Game(new String[]{"soap", "pc"}, playerManager, sc);
+        wordList = new WordList(new File("wordlist.dat"));
         mainMenu();
     }
 
@@ -246,8 +297,10 @@ public class test2 {
         while (true) {
             try {
                 playerManager.read(fl);
+                wordList.read();
             } catch (IOException ignored) {
             }
+            game = new Game(wordList.getWords(), playerManager, sc);
             int ch = menu("Hangman", getMainMenuOptions());
             switch (ch) {
                 case 1 -> {
@@ -314,6 +367,17 @@ public class test2 {
                     String name = sc.nextLine();
                     playerManager.displayPlayerCard(name);
                 }
+                case 8 -> {
+                    System.out.println("Enter word to add");
+                    String word = sc.nextLine();
+                    wordList.add(word);
+                    try {
+                        wordList.write();
+                    } catch (IOException e) {
+                        System.out.println("Couldn't save changes");
+                    }
+                }
+                case 9 -> wordList.delete();
                 default -> {
                     System.out.println("Exiting...");
                     System.exit(0);
@@ -353,7 +417,7 @@ public class test2 {
     }
 
     static String[] getMainMenuOptions() {
-        String[] op = new String[8];
+        String[] op = new String[10];
         op[0] = "Exit";
         op[1] = "Add Player";
         op[2] = "Rename Player";
@@ -362,6 +426,8 @@ public class test2 {
         op[5] = "Reset Player Statistics";
         op[6] = "View All Players";
         op[7] = "View Player Card";
+        op[8] = "Add Word to Wordlist";
+        op[9] = "Delete Wordlist";
         return op;
     }
 }
