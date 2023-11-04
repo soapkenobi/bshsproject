@@ -180,10 +180,10 @@ class PersonalFinanceManager {
         for (Transaction transaction : transactions) {
             if (date.equalsIgnoreCase(Main.parseDateToString(transaction.getTime()).split(" ")[0])) l++;
         }
-        String[][] rows = new String[l + 1][5]; // Adding 1 for headers
+        String[][] rows = new String[l + 1][5];
         String[] headers = {"ID", "Time", "Description", "Amount(" + currencySymbol + ")", "Important"};
         rows[0] = headers;
-        int rowCount = 1; // Start from the first row (after headers)
+        int rowCount = 1;
         for (int i = 0; i < transactions.length; i++) {
             if (date.equalsIgnoreCase(Main.parseDateToString(transactions[i].getTime()).split(" ")[0])) {
                 Transaction transaction = transactions[i];

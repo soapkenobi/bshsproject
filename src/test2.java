@@ -182,6 +182,7 @@ class Game {
         int lives = 0;
         do {
             if (arrayEqual(word, guessedWord)) break;
+            System.out.println("Guesses left: " + (5-lives) + "/5");
             System.out.print("Guessed word:");
             for (char ch : guessedWord) System.out.print(ch + " ");
             System.out.println("\nGuess a letter: ");
@@ -190,12 +191,15 @@ class Game {
                 System.out.println("You've already guessed this letter");
                 continue;
             }
+            boolean correct = false;
             for (int i = 0; i < word.length; i++) {
                 if ((word[i] + "").equalsIgnoreCase(guess + "")) {
                     guessedWord[i] = word[i];
-                    lives++;
+                    correct = true;
                 }
             }
+            if(!correct) lives++;
+
         } while (lives <= 5);
         if (arrayEqual(word, guessedWord)) {
             manager.getPlayers()[player].addScore(100);
