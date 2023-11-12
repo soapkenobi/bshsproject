@@ -303,7 +303,7 @@ class FinancialCalculators {
         double r = input.nextDouble();
         System.out.println("How many months would this account last?");
         int n = input.nextInt();
-        double simpleInterest = (ed * n * (n + 1) * r) / (2d * 12 * 100);
+        double simpleInterest = (ed * n * r) / (12d * 100);
         System.out.println("Interest earned on account: " + simpleInterest);
         return new Transaction("Simple Interest", simpleInterest);
     }
