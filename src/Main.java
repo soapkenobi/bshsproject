@@ -63,6 +63,9 @@ class PersonalFinanceManager {
     }
 
     public double getBalance() {
+        balance = 0.0;
+        for (Transaction transaction : transactions)
+            balance += transaction.getAmount();
         return balance;
     }
 
@@ -73,7 +76,6 @@ class PersonalFinanceManager {
         System.arraycopy(tempList, 0, transactions, 0, tempList.length);
         transactions[transactions.length - 1] = transaction;
         System.out.println("Added transaction with ID: " + (transactions.length - 1));
-        balance += amount;
     }
 
     public void addTransaction(Transaction transaction) {
@@ -82,7 +84,6 @@ class PersonalFinanceManager {
         System.arraycopy(tempList, 0, transactions, 0, tempList.length);
         transactions[transactions.length - 1] = transaction;
         System.out.println("Added transaction with ID: " + (transactions.length - 1));
-        balance += transaction.getAmount();
     }
 
     public void add(Transaction transaction) {
@@ -95,23 +96,23 @@ class PersonalFinanceManager {
     public void remove(int index) {
         Transaction[] tempArray = new Transaction[transactions.length - 1];
         int oldIndex = 0;
-        for (int i = 0; i < transactions.length; i++) {
+        for (int i = 0; i < transactions.length; i++)
             if (i != index) tempArray[oldIndex++] = transactions[i];
-        }
         transactions = tempArray;
     }
 
     public void displayTransactions() {
         String header = "";
-        for (int i = 0; i < 28; i++) header = header.concat("-");
+        for (int i = 0; i < 28; i++)
+            header = header.concat("-");
         header += " Transaction History ";
-        for (int i = 0; i < 28; i++) header = header.concat("-");
+        for (int i = 0; i < 28; i++)
+            header = header.concat("-");
         System.out.println(header);
         String[][] rows = new String[transactions.length + 1][5];
         rows[0] = new String[]{"ID", "Date", "Time", "Description", "Amount(" + currencySymbol + ")", "Important"};
-        for (int i = 0; i < transactions.length; i++) {
+        for (int i = 0; i < transactions.length; i++)
             displayTransaction(rows, i, true);
-        }
         System.out.println(Main.formatAsTable(rows));
         for (int i = 0; i < header.length(); i++) System.out.print("-");
         System.out.println();
@@ -119,12 +120,16 @@ class PersonalFinanceManager {
 
     public void displayImportant() {
         String header = "";
-        for (int i = 0; i < 28; i++) header = header.concat("-");
+        for (int i = 0; i < 28; i++)
+            header = header.concat("-");
         header += " Important Transaction History ";
-        for (int i = 0; i < 28; i++) header = header.concat("-");
+        for (int i = 0; i < 28; i++)
+            header = header.concat("-");
         System.out.println(header);
         int l = 0;
-        for (Transaction transaction : transactions) if (transaction.isImportant()) l++;
+        for (Transaction transaction : transactions)
+            if (transaction.isImportant())
+                l++;
         String[][] rows = new String[l + 1][4];
         rows[0] = new String[]{"ID", "Date", "Time", "Description", "Amount(" + currencySymbol + ")"};
         for (int i = 0; i < transactions.length; i++) {
@@ -303,7 +308,7 @@ class FinancialCalculators {
         double r = input.nextDouble();
         System.out.println("How many months would this account last?");
         int n = input.nextInt();
-        double simpleInterest = (ed * n * r) / (12d * 100);
+        double simpleInterest = (ed * r * n) / (12d * 100);
         System.out.println("Interest earned on account: " + simpleInterest);
         return new Transaction("Simple Interest", simpleInterest);
     }
@@ -555,7 +560,7 @@ class Main {
 
                 case 17: {
                     try {
-                        new DataOutputStream(new FileOutputStream(cfl));
+                        new DataOutputStream(new FileOutputStream(cfl)).close();
                     } catch (IOException ignored) {
                     }
                     System.out.print("Enter new currency code(for example, USD for United States Dollar): ");
