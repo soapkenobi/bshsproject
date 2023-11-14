@@ -642,6 +642,7 @@ class Main {
             result.append(String.format(format, (Object[]) strings)).append("\n");
         }
         return result.toString();
+
     }
 
     static void printOptions(int headerLength, int opNumber, String option) {
